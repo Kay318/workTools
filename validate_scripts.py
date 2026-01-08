@@ -247,7 +247,7 @@ class ComplexScriptValidator:
             }
             
             # 추가 컬럼 정보
-            for col in ['ccIC', '미국', '자동화 매뉴얼 구분']:
+            for col in ['ccIC', region, '자동화 매뉴얼 구분']:
                 if col in row:
                     row_result[col] = row[col]
             
@@ -347,7 +347,7 @@ class ComplexScriptValidator:
                 'Level2': r.get('Level2', ''),
                 'Level3': r.get('Level3', ''),
                 'ccIC': r.get('ccIC', ''),
-                '미국': r.get('미국', ''),
+                region: r.get(region, ''),
                 '구분': r.get('자동화 매뉴얼 구분', ''),
                 '발견스크립트수': r['발견_스크립트_수'],
                 '상태': r['상태'],
@@ -370,7 +370,7 @@ class ComplexScriptValidator:
                     'Level2': r.get('Level2', ''),
                     'Level3': r.get('Level3', ''),
                     'ccIC': r.get('ccIC', ''),
-                    '미국': r.get('미국', ''),
+                    region: r.get(region, ''),
                     '구분': r.get('자동화 매뉴얼 구분', '')
                 })
         
@@ -416,10 +416,18 @@ class ComplexScriptValidator:
 # 사용 예시
 if __name__ == "__main__":
     # 검증기 생성
-    excel_path=r"D:\files\업무 관련\IBD\(북미 ccIC) 인포.Big DATA_수집 항목_v1.24.3_'24년9월_r6_nv2409_v5_외부공유_260107.xlsx"
+    """
+    region: [국내, 유럽, 미국, 호주/뉴질랜드, 캐나다, 중국, 러시아, 브라질, 인도네시아, 일본, 인도, 중동] 중 하나
+    excel_path: 성적서 경로
+    sheet_name: 검증하려는 Sheet이름
+    excel_range: 검증하려는 셀 범위
+    scripts_folder: 스크립트 폴더
+    """
+    region = "유럽"
+    excel_path=r"D:\IBD\files\업무보고\성적서\유럽 26년 1차\(유럽 ccIC) 인포.Big DATA_수집 항목_v1.25.2_'25년2차_r11_자동화매뉴얼구분.xlsx"
     sheet_name = "NAVI"
-    excel_range = "C2:BR644"
-    scripts_folder=r"D:\NOVA\com.auto.script\Test Script\IBD\NAM\ccIC"
+    excel_range = "C2:BS671"
+    scripts_folder=r"D:\NOVA\com.auto.script\Test Script\IBD\EUR\ccIC"
 
     validator = ComplexScriptValidator(
         excel_path=excel_path,
@@ -437,10 +445,10 @@ if __name__ == "__main__":
     """
 
     validator.add_not_equal_filter("ccIC", "X", "ccIC가 X가 아닌 것")
-    validator.add_not_equal_filter("미국", "X", "미국이 X가 아닌 것")
+    validator.add_not_equal_filter(region, "X", f"{region} X가 아닌 것")
     validator.add_not_equal_filter("Test 결과", "N/A", "테스트 결과가 N/A 아닌 것")
     validator.add_in_filter("자동화\n매뉴얼 구분", ["자동화", "통합"], "자동화 또는 통합인 항목만")
-    
+
     # 검증 실행 및 리포트 생성
     report_path = validator.generate_detailed_report()
     print(f"검증 완료! 리포트: {report_path}")
