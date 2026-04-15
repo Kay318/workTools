@@ -27,12 +27,12 @@ def process_excel_files(file1_path, file2_path):
         wb2 = app.books.open(file2_path)
         
         # 시트 선택 (첫 번째 시트를 사용합니다. 필요에 따라 수정 가능)
-        ws1 = wb1.sheets[0]
-        ws2 = wb2.sheets[0]
+        ws1 = wb1.sheets["NAVI"]
+        ws2 = wb2.sheets["NAVI"]
         
         # 데이터 범위 확인
         # 엑셀2의 마지막 행 찾기
-        last_row_ws2 = ws2.range('A' + str(ws2.cells.last_cell.row)).end('up').row
+        last_row_ws2 = ws2.range('C' + str(ws2.cells.last_cell.row)).end('up').row
         
         print(f"엑셀2 처리할 총 행 수: {last_row_ws2 - 2}행 (3행부터 {last_row_ws2}행까지)")
         
@@ -41,9 +41,9 @@ def process_excel_files(file1_path, file2_path):
         ref_data = {}
         
         # 엑셀1의 마지막 행 찾기
-        last_row_ws1 = ws1.range('A' + str(ws1.cells.last_cell.row)).end('up').row
+        last_row_ws1 = ws1.range('C' + str(ws1.cells.last_cell.row)).end('up').row
         
-        print(f"엑셀1 참조 데이터 수: {last_row_ws1 - 1}행")
+        print(f"엑셀1 참조 데이터 수: {last_row_ws1 - 2}행")
         
         # 엑셀1 데이터 읽기
         for row in range(2, last_row_ws1 + 1):  # 1행은 헤더라고 가정
@@ -56,13 +56,19 @@ def process_excel_files(file1_path, file2_path):
             
             # AU 컬럼 값 읽기
             au_col = ws1.range(f'AU{row}').value
+
+            # AW 컬럼 값 읽기
+            aw_col = ws1.range(f'AW{row}').value
+
+            # AY 컬럼 값 읽기
+            ay_col = ws1.range(f'AY{row}').value
             
             # 키 생성 (튜플로 E~I 컬럼 값을 조합)
             key = (e_col, f_col, g_col, h_col, i_col)
             
             # 딕셔너리에 저장
             if key not in ref_data:
-                ref_data[key] = au_col
+                ref_data[key] = [au_col, aw_col, ay_col]
         
         print(f"참조 데이터 딕셔너리 크기: {len(ref_data)}")
         
@@ -84,12 +90,14 @@ def process_excel_files(file1_path, file2_path):
             # 참조 데이터에서 찾기
             if key in ref_data:
                 # AU 컬럼 값 복사
-                au_value = ref_data[key]
-                ws2.range(f'AU{row}').value = au_value
+                value_list = ref_data[key]
+                ws2.range(f'AU{row}').value = value_list[0]
+                ws2.range(f'AW{row}').value = value_list[1]
+                ws2.range(f'AY{row}').value = value_list[2]
                 copied_count += 1
                 
                 if copied_count <= 5:  # 처음 5개만 예시 출력
-                    print(f"행 {row}: 데이터 복사 완료 - {au_value}")
+                    print(f"행 {row}: 데이터 복사 완료 - {value_list}")
             
             processed_count += 1
             
@@ -98,7 +106,7 @@ def process_excel_files(file1_path, file2_path):
                 print(f"처리 중... {processed_count}행 완료")
         
         # 파일 저장
-        wb2.save()
+        # wb2.save()
         print(f"\n처리 완료!")
         print(f"총 처리 행 수: {processed_count}")
         print(f"복사된 데이터 수: {copied_count}")
@@ -117,10 +125,10 @@ def process_excel_files(file1_path, file2_path):
             wb1.close()
         except:
             pass
-        try:
-            wb2.close()
-        except:
-            pass
+        # try:
+        #     wb2.close()
+        # except:
+        #     pass
         
         # 엑셀 어플리케이션 종료
         try:
@@ -138,15 +146,15 @@ def main():
     print()
     
     # 파일 경로 설정 (실제 경로로 수정 필요)
-    excel1_path = input("엑셀1 파일 경로를 입력하세요 (참조용): ").strip()
-    excel2_path = input("엑셀2 파일 경로를 입력하세요 (수정할 파일): ").strip()
-    
+    base_excel = r"D:\IBD\files\업무보고\성적서\(국내 ccIC) 인포.Big DATA_수집 항목_v1.26.2_'26년2차_r0_자동화매뉴얼구분.xlsx"
+    target_excel = r"D:\IBD\files\업무보고\성적서\(국내 ccIC) 인포.Big DATA_수집 항목_v1.26.2_'26년2차_r6_자동화매뉴얼구분.xlsx"
+
     # 경로에 따옴표가 있으면 제거
-    excel1_path = excel1_path.strip('"\'')
-    excel2_path = excel2_path.strip('"\'')
+    base_excel = base_excel.strip('"\'')
+    target_excel = target_excel.strip('"\'')
     
     print("\n처리를 시작합니다...")
-    process_excel_files(excel1_path, excel2_path)
+    process_excel_files(base_excel, target_excel)
     
     input("\n완료되었습니다. 엔터 키를 누르면 종료합니다.")
 
